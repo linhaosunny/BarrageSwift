@@ -24,7 +24,7 @@ public class BarrageWalkSprite: BarrageSprite {
     ///该精灵在哪一条跑道，编号从0开始
     var track: UInt = 0
     ///同一跑道精灵间最小距离
-    var minDistance: CGFloat = 44
+    public var minDistance: CGFloat = 44
 
     ///跑道的高度
     public var trackHeight: CGFloat = 55
