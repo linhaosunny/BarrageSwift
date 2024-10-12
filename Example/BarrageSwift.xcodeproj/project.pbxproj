@@ -154,6 +154,7 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = YLCKX2493S;
 						LastSwiftMigration = 0900;
 					};
 				};
@@ -370,6 +371,7 @@
 			baseConfigurationReference = 0129666E5E40907CCDD21E5E /* Pods-BarrageSwift_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = YLCKX2493S;
 				INFOPLIST_FILE = BarrageSwift/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
@@ -386,6 +388,7 @@
 			baseConfigurationReference = A8ADA83AC3016C3555326F34 /* Pods-BarrageSwift_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = YLCKX2493S;
 				INFOPLIST_FILE = BarrageSwift/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;

@@ -13,6 +13,8 @@ import CoreGraphics
 public class BarrageRenderer: NSObject {
 
 
+    public var isLoopDisplay: Bool = false
+    
     var time: TimeInterval = 0
 
     private var dispatcher: BarrageDispatcher?
@@ -165,5 +167,11 @@ extension BarrageRenderer: BarrageDispatcherDelegate {
     func willDeactive(sprite: BarrageSprite) {
         sprite.view.removeFromSuperview()
         sprite.deactive()
+        
+        guard isLoopDisplay else {
+            return
+        }
+        
+        receive(sprite: sprite)
     }
 }

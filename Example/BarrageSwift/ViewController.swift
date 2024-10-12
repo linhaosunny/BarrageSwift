@@ -21,6 +21,7 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
 
         renderer.masked = false
+        renderer.isLoopDisplay = true
         
         contentView.addSubview(renderer.view)
     }
