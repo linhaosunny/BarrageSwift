@@ -116,10 +116,9 @@ extension BarrageSpriteView: BarrageViewProtocol {
             // Fallback on earlier versions
         }
 
-        let index = params["index"] as? Int
+        let title = params["title"] as? String
         //消息内容
-        let text = "这是第\(index ?? 0)个弹幕"
-        self.titleLabel.text = text
+        self.titleLabel.text = title
 
         self.gradientLayer.isHidden = false
         //渐变色

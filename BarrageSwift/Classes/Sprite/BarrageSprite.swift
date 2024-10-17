@@ -11,6 +11,12 @@ import CoreGraphics
 import  UIKit
 
 public class BarrageSprite {
+    public enum Direction {
+        case rightToLeft
+        case leftToRight
+//        case topToBottom
+//        case bottomToTop
+    }
 
     /// 延时, 这个是相对于rendered的绝对时间/秒
     /// 如果delay<0, 当然不会提前显示 ^ - ^
@@ -34,7 +40,7 @@ public class BarrageSprite {
     private var tapGesture: UITapGestureRecognizer?
     ///当为true时，表示在本次弹幕周期内，强制将弹幕无效
     private var invalid: Bool = false
-     var origin: CGPoint
+    var origin: CGPoint
 
     var createSpriteViewHandle: () -> BarrageViewProtocol
 
@@ -47,6 +53,12 @@ public class BarrageSprite {
 
         zIndex = 0
         invalid = false
+    }
+    
+    public func position(point: CGPoint, rect: CGRect) {
+        guard self.view != nil else { return}
+        
+        self.view.frame = self.position(point: point)
     }
 
     ///更新精灵的位置
@@ -64,16 +76,25 @@ public class BarrageSprite {
     public func rect(time: TimeInterval) -> CGRect {
         return CGRect(origin: origin, size: self.size)
     }
+    
+    public func position(point: CGPoint) -> CGRect {
+        return CGRect(origin: origin, size: self.size)
+    }
 
     /// 在本次弹幕周期内，强制将弹幕无效
     public func forceInvalid() {
         self.invalid = true
     }
+    
+    public func forceValid() {
+        self.valid = true
+    }
 
     //激活精灵
-    public func active(sprites: [BarrageSprite], timestamp: TimeInterval, rect: CGRect) {
+    public func active(sprites: [BarrageSprite], timestamp: TimeInterval, rect: CGRect, direction: Direction) {
+        
         self.timestamp = timestamp
-
+        
         //创建弹幕view
         if self.view == nil {
             self.view = self.createSpriteViewHandle()
@@ -89,9 +110,20 @@ public class BarrageSprite {
             self.view.frame = CGRect(origin: .zero, size: size)
         }
 
-        self.origin = self.origin(inBounds: rect, with: sprites)
-        self.view.frame = CGRect(origin: origin, size: self.size)
+        self.origin = self.origin(inBounds: rect, with: sprites, direction: direction)
+        
+        if let last = self.last(sprites: sprites, direction: direction) {
+            let origin = self.originFrameTimePostionFrom(sprite: last, direction: direction)
+            self.timestamp = origin.time
+            self.view.frame = origin.rect
+            
+        } else {
+            self.timestamp = timestamp
+            self.view.frame = CGRect(origin: origin, size: self.size)
+        }
+        
     }
+    
 
     public func deactive() {
         self.restoreViewState()
@@ -127,15 +159,27 @@ public class BarrageSprite {
     @objc func clickSpriteView() {
         self.clickAction?(self.viewParams)
     }
+    
+    public func spriteDistance() -> CGFloat {
+        return 44.0
+    }
 
+    public func last(sprites: [BarrageSprite],
+                    direction: Direction = .rightToLeft) -> BarrageSprite? {
+        return nil
+    }
+    
+    public func originFrameTimePostionFrom(sprite:BarrageSprite, direction: Direction = .rightToLeft) -> (rect: CGRect, time:CFTimeInterval) {
+        return (.zero, self.timestamp)
+    }
 
     ///判断新的精灵能否显示下.需要子类去override
-    public func canShow(inBounds rect: CGRect, with sprites: [BarrageSprite]) -> Bool {
+    public func canShow(inBounds rect: CGRect, with sprites: [BarrageSprite], direction: Direction) -> Bool {
         return true
     }
 
     ///设置弹幕初试位置，子类需要override
-    public func origin(inBounds rect: CGRect, with sprites: [BarrageSprite]) -> CGPoint {
+    public func origin(inBounds rect: CGRect, with sprites: [BarrageSprite], direction: Direction) -> CGPoint {
         return CGPoint.zero
     }
 

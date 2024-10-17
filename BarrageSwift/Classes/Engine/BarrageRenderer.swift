@@ -10,10 +10,18 @@ import Foundation
 import UIKit
 import CoreGraphics
 
+class BarragePanState: NSObject {
+    var direction: BarrageSprite.Direction = .rightToLeft
+    
+    var isTouchScroll: Bool = false
+}
+
 public class BarrageRenderer: NSObject {
 
 
     public var isLoopDisplay: Bool = false
+    
+    public var isAllowTouchScroll: Bool = false
     
     var time: TimeInterval = 0
 
@@ -22,6 +30,8 @@ public class BarrageRenderer: NSObject {
     private(set) var startTime: Date?
     private(set) var pausedTime: Date?
     private var pausedDuration: TimeInterval = 0
+    
+    private var _panState: BarragePanState = .init()
 
     public var view: BarrageCanvas {
         return self.canvas
@@ -51,8 +61,17 @@ public class BarrageRenderer: NSObject {
         else if let time = pausedTime {
             self.pausedDuration += Date().timeIntervalSince(time)
         }
+        dispatcher?.isLoopDisplay = isLoopDisplay
         pausedTime = nil
         clock.start()
+
+        
+        guard isAllowTouchScroll else {
+            return
+        }
+        
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(panAction(_:)))
+        self.canvas.addGestureRecognizer(pan)
     }
 
     public func pause() {
@@ -78,7 +97,7 @@ public class BarrageRenderer: NSObject {
     }
 
     private func update() {
-        guard let dispatcher = dispatcher else { return }
+        guard let dispatcher = dispatcher, !_panState.isTouchScroll else { return }
         dispatcher.dispatch()
 
         for sprite in dispatcher.activeSprites {
@@ -140,17 +159,55 @@ public class BarrageRenderer: NSObject {
     }
 }
 
+extension BarrageRenderer {
+    @objc fileprivate func panAction(_ pan: UIPanGestureRecognizer) {
+        switch pan.state {
+        case .began:
+            pause()
+            _panState.isTouchScroll = true
+        case .changed:
+            let point = pan.translation(in: pan.view)
+            
+            _panState.direction = point.x < 0 ? .rightToLeft : .leftToRight
+            
+            updatePosition(point: point)
+            pan.setTranslation(CGPoint.zero, in: pan.view)
+        case .ended, .cancelled:
+            start()
+            _panState.isTouchScroll = false
+        default:
+            break
+        }
+    }
+    
+    private func updatePosition(point: CGPoint) {
+        guard let dispatcher = dispatcher else { return }
+        
+        for sprite in dispatcher.activeSprites {
+            sprite.position(point: point, rect: self.canvas.bounds)
+        }
+        
+        dispatcher.dispatch(direction: true)
+    }
+}
+
 
 extension BarrageRenderer: BarrageDispatcherDelegate {
+    private func getDirection(sprite: BarrageWalkSprite) -> BarrageSprite.Direction {
+        return _panState.isTouchScroll ? _panState.direction : sprite.direction
+    }
 
     func shouldActive(sprite: BarrageSprite) -> Bool {
-        //暂停状态
-        if pausedTime != nil {
-            return false
+        guard let dispatcher = dispatcher, let sprite = sprite as? BarrageWalkSprite else { return false }
+        
+        if !_panState.isTouchScroll {
+            //暂停状态
+            if pausedTime != nil {
+                return false
+            }
         }
-
-        guard let dispatcher = dispatcher else { return false }
-        let canShow = sprite.canShow(inBounds: canvas.bounds, with: dispatcher.activeSprites)
+        
+        let canShow = sprite.canShow(inBounds: canvas.bounds, with: dispatcher.activeSprites, direction: getDirection(sprite: sprite))
         return canShow
     }
     
@@ -159,19 +216,13 @@ extension BarrageRenderer: BarrageDispatcherDelegate {
     }
 
     func willActive(sprite: BarrageSprite) {
-        guard let dispatcher = dispatcher else { return }
-        sprite.active(sprites: dispatcher.activeSprites, timestamp: self.time, rect: canvas.bounds)
+        guard let dispatcher = dispatcher, let sprite = sprite as? BarrageWalkSprite else { return }
+        sprite.active(sprites: dispatcher.activeSprites, timestamp: self.time, rect: canvas.bounds, direction: getDirection(sprite: sprite))
         canvas.addSubview(sprite.view)
     }
 
     func willDeactive(sprite: BarrageSprite) {
         sprite.view.removeFromSuperview()
         sprite.deactive()
-        
-        guard isLoopDisplay else {
-            return
-        }
-        
-        receive(sprite: sprite)
     }
 }

@@ -26,6 +26,8 @@ public class BarrageDispatcher {
     private var waitingSprites = [BarrageSprite]()
     private(set) weak var delegate: BarrageDispatcherDelegate?
     private var previousTime: TimeInterval = 0
+    
+    var isLoopDisplay: Bool = false
 
     init() {
 
@@ -59,21 +61,28 @@ public class BarrageDispatcher {
     private var updateIndex = 0
 
     ///派发精灵。每一个时间周期调用一次改方法
-    public func dispatch() {
+    public func dispatch(direction: Bool = false) {
 
-        ///性能优化，每30个时间周期（大概半秒）刷新一次即可，无需每次重复刷新，浪费性能
-        updateIndex += 1
-        guard updateIndex > 30 else {
-            return
+        if !direction {
+            ///性能优化，每30个时间周期（大概半秒）刷新一次即可，无需每次重复刷新，浪费性能
+            updateIndex += 1
+            guard updateIndex > 10 else {
+                return
+            }
+            updateIndex = 0
         }
-        updateIndex = 0
-        
+
 
         //将失效的精灵移除
         let willDeactives = activeSprites.filter { $0.valid == false }
         willDeactives.forEach { [weak self] (sprite) in
             self?.deactive(sprite: sprite)
         }
+        
+        if isLoopDisplay, !willDeactives.isEmpty {
+            waitingSprites.append(contentsOf: willDeactives)
+        }
+        
         activeSprites.removeAll(where: {$0.valid == false})
 
         //循环取出可以显示的精灵
@@ -82,7 +91,7 @@ public class BarrageDispatcher {
             let sprite = waitingSprites[i]
             if self.shouldActive(sprite: sprite) {
                 self.active(sprite: sprite)
-
+                sprite.forceValid()
                 activeSprites.append(sprite)
                 waitingSprites.remove(at: i)
             }
