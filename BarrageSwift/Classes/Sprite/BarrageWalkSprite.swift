@@ -88,7 +88,7 @@ public class BarrageWalkSprite: BarrageSprite {
             self.origin.x = 0
             destination.x = rect.size.width
         case .leftToRight:
-            self.origin.x = 0 - self.size.width
+            self.origin.x = 0
             destination.x = rect.size.width
         }
 
@@ -116,11 +116,20 @@ public class BarrageWalkSprite: BarrageSprite {
     }
     
     private func destionation() -> CGFloat {
-        if origin.x > destination.x {
+        switch self.direction {
+        case .rightToLeft:
+            if origin.x > destination.x {
+                return self.destination.x - self.origin.x
+            }
+            
+            return self.origin.x - self.destination.x
+        case .leftToRight:
+            if origin.x > destination.x {
+                return self.origin.x - self.destination.x
+            }
+            
             return self.destination.x - self.origin.x
         }
-        
-        return self.origin.x - self.destination.x
     }
 
     override public func rect(time: TimeInterval) -> CGRect {

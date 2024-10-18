@@ -88,8 +88,8 @@ class ViewController: UIViewController {
 
         let walkSprite = BarrageWalkSprite { BarrageSpriteView() }
         walkSprite.viewParams["title"] = title
-        walkSprite.direction = .rightToLeft
-//        walkSprite.direction = .leftToRight
+//        walkSprite.direction = .rightToLeft
+        walkSprite.direction = .leftToRight
         walkSprite.minDistance = 20.0
         walkSprite.speed = 0.1
         walkSprite.clickAction = { params in
