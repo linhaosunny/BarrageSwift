@@ -20,7 +20,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
 
-        renderer.masked = false
+        renderer.masked = .none
         renderer.isLoopDisplay = true
         
         contentView.addSubview(renderer.view)
@@ -88,10 +88,10 @@ class ViewController: UIViewController {
 
         let walkSprite = BarrageWalkSprite { BarrageSpriteView() }
         walkSprite.viewParams["title"] = title
-//        walkSprite.direction = .rightToLeft
-        walkSprite.direction = .leftToRight
+        walkSprite.direction = .rightToLeft
+//        walkSprite.direction = .leftToRight
         walkSprite.minDistance = 20.0
-        walkSprite.speed = 0.1
+        walkSprite.speed = 0.2
         walkSprite.clickAction = { params in
             let title = params["title"] as? String
             print("\(title ?? "")")

@@ -11,8 +11,14 @@ import Foundation
 import UIKit
 
 public class BarrageCanvas: UIView {
+    public enum MaskType {
+        case none
+        case subviews
+        case onlyself
+        case all
+    }
     /// canvas是否拦截事件
-    var masked: Bool = true
+    public var masked: MaskType = .all
 
 
     var margin: UIEdgeInsets = .zero {
@@ -56,17 +62,33 @@ public class BarrageCanvas: UIView {
     }
 
     override public func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if masked {
+        switch masked {
+        case .none:
+            guard let view = super.hitTest(point, with: event) else {
+                for item in self.subviews {
+                    let itemPoint = item.convert(point, from: self)
+                    if let responder = item.hitTest(itemPoint, with: event) {
+                        return responder
+                    }
+                }
+                
+                return self
+            }
+
+            return view
+        case .subviews:
+            return self
+        case .onlyself:
+            for item in self.subviews {
+                let itemPoint = item.convert(point, from: self)
+                if let responder = item.hitTest(itemPoint, with: event) {
+                    return responder
+                }
+            }
+            return nil
+        case .all:
             return super.hitTest(point, with: event)
         }
-
-        for item in self.subviews {
-            let itemPoint = item.convert(point, from: self)
-            if let responder = item.hitTest(itemPoint, with: event) {
-                return responder
-            }
-        }
-        return nil
     }
 
 }

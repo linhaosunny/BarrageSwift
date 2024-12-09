@@ -141,7 +141,7 @@ public class BarrageRenderer: NSObject {
             return canvas.margin
         }
     }
-    public var masked: Bool {
+    public var masked: BarrageCanvas.MaskType {
         set {
             canvas.masked = newValue
         }
